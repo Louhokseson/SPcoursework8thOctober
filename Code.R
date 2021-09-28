@@ -1,5 +1,5 @@
 #XXXXXXXXXXXXXXXXXXXXXXXX This PATH XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-setwd("D:/EDIN/Sem1/StatisticalProgramming/Coursework1/SPcoursework8thOctober")
+setwd("Desktop/R/SPcoursework8thOctober")
 # setwd("put/your/local/repo/location/here")
 # setwd("put/your/local/repo/location/here")
 #XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
