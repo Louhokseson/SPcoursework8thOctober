@@ -1,5 +1,5 @@
 #XXXXXXXXXXXXXXXXXXXXXXXX This PATH XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-setwd("Desktop/R/SPcoursework8thOctober")
+setwd("D:/EDIN/Sem1/StatisticalProgramming/Coursework1/SPcoursework8thOctober")
 # setwd("put/your/local/repo/location/here")
 # setwd("put/your/local/repo/location/here")
 #XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -19,17 +19,19 @@ split_punct <- function(x){
   #in the vector of words, after the word it came from. 
   ls <- c(",", ".", ";", "!", ":", "?", "’")
   lenl <- length(ls)
+  lenA <- 0 
+  lenx <- length(x)
   for(i in 1:lenl) {
     browser()
     #find the location of the words that contains punctuation(s).
     a <- grep(ls[i],x,fixed=TRUE)
-    X <- gsub(ls[i],"",x,fixed=TRUE) ## get rid of punctuation
-    lenA <- length(a)
-    Totallen <- lenA + length(x)
+    x[a] <- gsub(ls[i],"",x[a]) ## get rid of punctuation
+    lenA <- lenA + length(a)
+    Totallen <- lenA + lenx
     xs <- rep(0,Totallen) ## vector to store the single digits
-    A <- a + 1:lenA
+    A <- a + 1:length(a)
     xs[A] <- ls[i]
-    xs[-A] <- X
+    xs[-A] <- x
     x <- xs
   }
   return(x)
