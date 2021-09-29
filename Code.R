@@ -11,6 +11,11 @@ a <- a[-((n-2909):n)] ## strip license
 #XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 #XXXXXXXXXXXXXXXXXX THE SPLIT-PUNCT XXXXXXXXXXXXXXXXXX
 #XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+# test = c("An", "omnishambles,", "in", "a", "headless", "chicken", "factory")
+is.integer0 <- function(x)
+{
+  is.integer(x) && length(x) == 0L
+}
 #x <- gsub(ls[i],"",x,fixed=TRUE) ## get rid of punctuation
 
 split_punct <- function(x){
@@ -25,13 +30,17 @@ split_punct <- function(x){
     browser()
     #find the location of the words that contains punctuation(s).
     a <- grep(ls[i],x,fixed=TRUE)
-    x[a] <- gsub(ls[i],"",x[a]) ## get rid of punctuation
+    x[a] <- gsub(ls[i],"",x[a], fixed=TRUE) ## get rid of punctuation
     lenA <- lenA + length(a)
     Totallen <- lenA + lenx
     xs <- rep(0,Totallen) ## vector to store the single digits
     A <- a + 1:length(a)
     xs[A] <- ls[i]
-    xs[-A] <- x
+    if(is.integer0(a)){
+      xs <-x
+    } else {
+      xs[-A] <- x
+    }
     x <- xs
   }
   return(x)
