@@ -12,7 +12,7 @@ a <- a[-((n-2909):n)] ## strip license
 #XXXXXXXXXXXXXXXXXX THE SPLIT-PUNCT XXXXXXXXXXXXXXXXXX
 #XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-# test = c("An", "omnishambles,", "in", "a", "headless", "chicken", "factory")
+# test = c("An", "omnishambles,", "in", "a", "headless", "chicken", "factory", ",")
 
 
 is.integer0 <- function(x)
@@ -32,15 +32,34 @@ split_punct <- function(x){
   lenx <- length(x)
   for(i in 1:lenl) {
     #browser()
+    
     #find the location of the words that contains punctuation(s).
-    location <- grep(ls[i],x,fixed=TRUE)
-    x[location] <- gsub(ls[i],"",x[location], fixed=TRUE) ## get rid of punctuation
-    lenA <- lenA + length(location)
+    location_has_punct <- grep(ls[i],x,fixed=TRUE)
+    location_spe_punct <- which(x == ls[i])
+    
+    #(contain punctuation) location_has_punct >= location_spe_punct (single punctuation)
+    #location_word_punct is the location that words contain the punctuation
+    Intersaction <- location_has_punct%in%location_spe_punct
+    location_word_punct <- location_has_punct[which(Intersaction == FALSE)]
+    
+    #we clear the punctuation from the words have that punctuation
+    x[location_word_punct] <- gsub(ls[i],"",x[location_word_punct], fixed=TRUE) 
+    
+    #The length of already spilted punctuation
+    lenA <- lenA + length(location_word_punct)
+    
+    #update the total length for each loop
     Totallen <- lenA + lenx
+    
+    #A is the location for a punctuation to insert in this loop
+    
     xs <- rep(0,Totallen) ## vector to store the single digits
-    A <- location + 1:length(location)
+    A <- location_word_punct + 1:length(location_word_punct)
+    
     xs[A] <- ls[i]
-    if(is.integer0(location)){
+    
+    #avoid the case that there is no punctuation in each loop
+    if(is.integer0(location_has_punct)){
       xs <-x
     } else {
       xs[-A] <- x
@@ -49,6 +68,8 @@ split_punct <- function(x){
   }
   return(x)
 }
+
+
 
 #XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 #XXXXXXXXXXXXXXXXXX SPLIT-PUNCT END XXXXXXXXXXXXXXXXXX
@@ -59,51 +80,33 @@ split_punct <- function(x){
 #XXXXXXXXXXXX M COMMONLY OCCURRING WORDS XXXXXXXXXXXXX
 #XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-
-splited_text <- split_punct(a)
+splited_text<- split_punct(a)
 
 len_splited <- length(splited_text)
 
 lower_splited_text <- tolower(splited_text)
 
+# find the unique element of the splited text
 unique_words <- unique(lower_splited_text,incomparables = NULL)
 
+# match each word to the unique words
 vector_match <- match(lower_splited_text,unique_words,incomparables = NULL)
 
 cat(length(vector_match) == length(splited_text))
 
+# count the number of 1 2 3 ....
 count_unique_words <- tabulate(vector_match)
 
-
-# The threshold function
-#m_threshold <- function(x){
-  
-#  m <- 1000
-#  epsilon <- 500
-  
-#  if((x<=m+epsilon) & (x>=m-epsilon)){
-#    return(TRUE)
-#  } else {
-#    return(FALSE)
-#  }
-  
-#}
-
-#len_unique <- length(unique_words)
-#location_threshold <- NULL
-#for(i in 1:len_unique) {
-#  if (m_threshold(count_unique_words[i])){
-#    location_threshold <- append(location_threshold, i)
-#  }
-#}
 
 
 #XXXXXXXXXXXXX From small to large XXXXXXXXXXXXXXXXXXX
 
 
+m <- 1036
+
 Order <- order(count_unique_words)
 
-most_common_word <- Order[(length(Order)-999):length(Order)]
+most_common_word <- Order[(length(Order)- m + 1):length(Order)]
 
 b <- unique_words[most_common_word]
 
@@ -129,8 +132,107 @@ shifted_pair <- cbind(common_match[1:length(common_match)-1],common_match[2:leng
 sum_shifted_pair <- rowSums(shifted_pair)
 
 #find the location of NA.
-location_NA <- grep(NA,sum_shifted_pair,fixed=TRUE)
+location_NA <- is.na(sum_shifted_pair)
+
+location_common_pair <- grep(FALSE,location_NA)
+
+#define a M by M matrix with elements 0
+
+A<-matrix(0, nrow= m, ncol=m)
+
+# if i,j is a common_pair, A[i,j] += 1
+
+for (i in 1:length(location_common_pair)){
+  A[shifted_pair[location_common_pair[i],1], shifted_pair[location_common_pair[i],2]] <- A[shifted_pair[location_common_pair[i],1], shifted_pair[location_common_pair[i],2]] + 1
+}
+
+#Let the sum of each row equal to one
+
+for (i in 1:m){
+  A[i,] <- A[i,]/sum(A[i,])
+}
 
 #XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 #XXXXXXXXXXXXXXXXXX  Question 7  END XXXXXXXXXXXXXXXXX
+#XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+
+
+#XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+#XXXXXXXXXXXXXXXXXX  Question 8  XXXXXXXXXXXXXXXXXXXXX
+#XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+
+indexes_b_chosen<-1:length(b)
+
+#random selection from b
+
+rand_initial <- sample(indexes_b_chosen,1)
+
+#generate a vector to store the printed index
+random_sample_index <- rep(0,50)
+
+random_sample_index[1] <-  rand_initial
+
+for (i in 2:50)
+{
+  print(rand_initial)
+  rand_initial <- sample(1:length(b),1,prob=A[rand_initial,])
+  random_sample_index[i] <- rand_initial
+}
+
+
+
+cat(b[random_sample_index])
+
+#XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+#XXXXXXXXXXXXXXXXXX  Question 8  END XXXXXXXXXXXXXXXXX
+#XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+#XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+#XXXXXXXXXXXXXXXXXX  Question 9  XXXXXXXXXXXXXXXXXXXXX
+#XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+# Try to find the number of first capitalized common words in the splited text
+
+capitalized_count <- rep(0,m)
+
+library(stringr)
+for(i in 1:m)
+{
+  capitalized_count[i] <- length(which(splited_text == str_to_title(b[i])))
+}
+
+# count_unique_words[most_common_word] counts the number of each common word
+
+sum_common <- count_unique_words[most_common_word]
+
+# runif(n, min = 0, max = 1)
+
+#The probability of the capitalization of a common word
+
+capitalized_prob <- rep(0,m)
+for(i in 1:m)
+{
+  capitalized_prob[i] <- capitalized_count[i]/sum_common[i]
+}
+
+
+#print the capitalized word with probability capitalized_prob
+print_b <- rep("",50)
+for (i in 1:50)
+{
+  if (runif(1, min = 0, max = 1) < capitalized_prob[i])
+  {
+    print_b[i] <- str_to_title(b[random_sample_index[i]])
+  }else
+  {
+    print_b[i] <- b[random_sample_index[i]]
+  }
+}
+
+cat(print_b)
+
+#XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+#XXXXXXXXXXXXXXXXXX  Question 9  END XXXXXXXXXXXXXXXXX
 #XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
